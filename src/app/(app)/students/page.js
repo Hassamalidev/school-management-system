@@ -163,7 +163,7 @@ export default function StudentsPage() {
           />
         ) : (
           <div className="scroll-thin overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full stack-table">
               <thead>
                 <tr className="bg-navy-800 text-white">
                   <th className="th">#</th>
@@ -185,26 +185,26 @@ export default function StudentsPage() {
                   const fee = s.monthly_fee ?? s.classes?.monthly_fee ?? 0;
                   return (
                     <tr key={s.id} className="hover:bg-slate-50">
-                      <td className="td text-slate-400">{i + 1}</td>
-                      <td className="td">
+                      <td data-label="#" className="td text-slate-400">{i + 1}</td>
+                      <td data-label="Student" className="td">
                         <div className="font-semibold text-navy-900">{s.full_name}</div>
                         {s.roll_no && <div className="text-xs text-slate-400">Roll {s.roll_no}</div>}
                       </td>
-                      <td className="td text-slate-600">{s.classes?.name || "—"}</td>
-                      <td className="td text-slate-600">{s.father_name || "—"}</td>
-                      <td className="td text-slate-600">{s.guardian_name || "—"}</td>
-                      <td className="td text-slate-600">{s.phone || "—"}</td>
-                      <td className="td text-right tabular-nums">
+                      <td data-label="Class" className="td text-slate-600">{s.classes?.name || "—"}</td>
+                      <td data-label="Father Name" className="td text-slate-600">{s.father_name || "—"}</td>
+                      <td data-label="Guardian" className="td text-slate-600">{s.guardian_name || "—"}</td>
+                      <td data-label="Phone" className="td text-slate-600">{s.phone || "—"}</td>
+                      <td data-label="Monthly Fee" className="td text-right tabular-nums">
                         {num(fee)}
                         {s.monthly_fee != null && <span className="ml-1 text-[10px] text-amber-600">custom</span>}
                       </td>
-                      <td className="td text-right font-semibold tabular-nums text-emerald-700">
+                      <td data-label="Paid" className="td text-right font-semibold tabular-nums text-emerald-700">
                         {num(bal?.total_paid || 0)}
                       </td>
-                      <td className="td text-right font-semibold tabular-nums text-rose-700">
+                      <td data-label="Remaining" className="td text-right font-semibold tabular-nums text-rose-700">
                         {num(bal?.total_remaining || 0)}
                       </td>
-                      <td className="td">
+                      <td data-label="Status" className="td">
                         <span
                           className={`chip ${
                             s.status === "active"
@@ -215,7 +215,7 @@ export default function StudentsPage() {
                           {s.status === "active" ? "Active" : "Inactive"}
                         </span>
                       </td>
-                      <td className="td">
+                      <td data-label="Actions" className="td">
                         <div className="flex justify-end gap-1">
                           <IconBtn title="Fee history" onClick={() => setViewing(s)}>
                             <Eye className="h-4 w-4" />
@@ -285,7 +285,7 @@ function IconBtn({ children, title, onClick, danger }) {
     <button
       title={title}
       onClick={onClick}
-      className={`rounded-lg p-2 transition ${
+      className={`icon-btn ${
         danger ? "text-rose-500 hover:bg-rose-50" : "text-slate-500 hover:bg-slate-100 hover:text-navy-900"
       }`}
     >
@@ -490,7 +490,7 @@ function StudentHistory({ student, onClose }) {
         <Empty icon={Eye} title="No challans yet" hint="Generate this month's challans from Fee Management." />
       ) : (
         <div className="scroll-thin max-h-[50vh] overflow-auto rounded-xl ring-1 ring-slate-200">
-          <table className="w-full">
+          <table className="w-full stack-table">
             <thead className="sticky top-0">
               <tr className="bg-slate-100 text-slate-600">
                 <th className="th">Month</th>
@@ -505,15 +505,15 @@ function StudentHistory({ student, onClose }) {
             <tbody className="divide-y divide-slate-100 bg-white">
               {rows.map((r) => (
                 <tr key={r.id}>
-                  <td className="td font-semibold text-navy-900">{periodLabel(r.year, r.month)}</td>
-                  <td className="td font-mono text-xs text-slate-500">{r.receipt_no}</td>
-                  <td className="td text-right tabular-nums">{num(r.payable)}</td>
-                  <td className="td text-right tabular-nums text-emerald-700">{num(r.paid)}</td>
-                  <td className="td text-right tabular-nums font-semibold text-rose-700">{num(r.remaining)}</td>
-                  <td className="td">
+                  <td data-label="Month" className="td font-semibold text-navy-900">{periodLabel(r.year, r.month)}</td>
+                  <td data-label="Receipt No." className="td font-mono text-xs text-slate-500">{r.receipt_no}</td>
+                  <td data-label="Payable" className="td text-right tabular-nums">{num(r.payable)}</td>
+                  <td data-label="Paid" className="td text-right tabular-nums text-emerald-700">{num(r.paid)}</td>
+                  <td data-label="Remaining" className="td text-right tabular-nums font-semibold text-rose-700">{num(r.remaining)}</td>
+                  <td data-label="Status" className="td">
                     <span className={`chip ${statusTone(r.status)}`}>{r.status}</span>
                   </td>
-                  <td className="td text-slate-500">{r.last_paid_on ? shortDate(r.last_paid_on) : "—"}</td>
+                  <td data-label="Last payment" className="td text-slate-500">{r.last_paid_on ? shortDate(r.last_paid_on) : "—"}</td>
                 </tr>
               ))}
             </tbody>

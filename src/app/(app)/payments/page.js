@@ -132,7 +132,7 @@ export default function PaymentsPage() {
           />
         ) : (
           <div className="scroll-thin overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full stack-table">
               <thead>
                 <tr className="bg-navy-800 text-white">
                   <th className="th">Date</th>
@@ -150,23 +150,23 @@ export default function PaymentsPage() {
               <tbody className="divide-y divide-slate-100">
                 {rows.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50">
-                    <td className="td text-slate-600">{shortDate(p.paid_on)}</td>
-                    <td className="td font-semibold text-navy-900">{p.students?.full_name || "—"}</td>
-                    <td className="td text-slate-600">{p.students?.classes?.name || "—"}</td>
-                    <td className="td text-slate-600">
+                    <td data-label="Date" className="td text-slate-600">{shortDate(p.paid_on)}</td>
+                    <td data-label="Student" className="td font-semibold text-navy-900">{p.students?.full_name || "—"}</td>
+                    <td data-label="Class" className="td text-slate-600">{p.students?.classes?.name || "—"}</td>
+                    <td data-label="Period" className="td text-slate-600">
                       {p.challans ? periodLabel(p.challans.year, p.challans.month) : "—"}
                     </td>
-                    <td className="td font-mono text-xs text-slate-500">{p.challans?.receipt_no || "—"}</td>
-                    <td className="td">
+                    <td data-label="Receipt No." className="td font-mono text-xs text-slate-500">{p.challans?.receipt_no || "—"}</td>
+                    <td data-label="Method" className="td">
                       <span className="chip bg-slate-50 text-slate-600 ring-slate-200">{p.method}</span>
                     </td>
-                    <td className="td text-slate-500">{p.reference || "—"}</td>
-                    <td className="td text-slate-500">{p.received_by || "—"}</td>
-                    <td className="td text-right font-semibold tabular-nums text-emerald-700">{num(p.amount)}</td>
+                    <td data-label="Reference" className="td text-slate-500">{p.reference || "—"}</td>
+                    <td data-label="Received By" className="td text-slate-500">{p.received_by || "—"}</td>
+                    <td data-label="Amount" className="td text-right font-semibold tabular-nums text-emerald-700">{num(p.amount)}</td>
                     <td className="td">
                       <button
                         title="Delete payment"
-                        className="rounded-lg p-2 text-rose-500 hover:bg-rose-50"
+                        className="icon-btn text-rose-500 hover:bg-rose-50"
                         onClick={() => setRemoving(p)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -282,7 +282,7 @@ function ChallanPicker({ open, classes, onClose, onPick }) {
             hint="Generate the month's challans first, under Fee Management → Generate Challan."
           />
         ) : (
-          <table className="w-full">
+          <table className="w-full stack-table">
             <thead className="sticky top-0 bg-slate-100">
               <tr className="text-slate-600">
                 <th className="th">Student</th>
@@ -296,11 +296,11 @@ function ChallanPicker({ open, classes, onClose, onPick }) {
             <tbody className="divide-y divide-slate-100 bg-white">
               {visible.map((r) => (
                 <tr key={r.id} className="hover:bg-slate-50">
-                  <td className="td font-semibold text-navy-900">{r.student_name}</td>
-                  <td className="td text-slate-600">{r.class_name || "—"}</td>
-                  <td className="td text-right tabular-nums">{num(r.payable)}</td>
-                  <td className="td text-right font-semibold tabular-nums text-rose-700">{num(r.remaining)}</td>
-                  <td className="td">
+                  <td data-label="Student" className="td font-semibold text-navy-900">{r.student_name}</td>
+                  <td data-label="Class" className="td text-slate-600">{r.class_name || "—"}</td>
+                  <td data-label="Payable" className="td text-right tabular-nums">{num(r.payable)}</td>
+                  <td data-label="Remaining" className="td text-right font-semibold tabular-nums text-rose-700">{num(r.remaining)}</td>
+                  <td data-label="Status" className="td">
                     <span className={`chip ${statusTone(r.status)}`}>{r.status}</span>
                   </td>
                   <td className="td text-right">

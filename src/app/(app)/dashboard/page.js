@@ -133,7 +133,7 @@ export default function DashboardPage() {
               </div>
 
               <div className="scroll-thin overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full stack-table">
                   <thead>
                     <tr className="bg-navy-800 text-white">
                       <th className="th">Class</th>
@@ -147,18 +147,18 @@ export default function DashboardPage() {
                   <tbody className="divide-y divide-slate-100">
                     {rows.map((r) => (
                       <tr key={r.id} className="hover:bg-slate-50">
-                        <td className="td font-semibold text-navy-900">{r.name}</td>
-                        <td className="td text-right">
+                        <td data-label="Class" className="td font-semibold text-navy-900">{r.name}</td>
+                        <td data-label="Monthly Fee" className="td text-right">
                           <InlineNumber
                             value={r.monthly_fee}
                             title="Click to edit the monthly fee"
                             onSave={(v) => patchFee(r, v)}
                           />
                         </td>
-                        <td className="td text-right tabular-nums">{r.enrolled}</td>
-                        <td className="td text-right tabular-nums">{num(r.billed)}</td>
-                        <td className="td text-right tabular-nums font-semibold text-emerald-700">{num(r.paid)}</td>
-                        <td className="td text-right tabular-nums font-semibold text-rose-700">{num(r.remaining)}</td>
+                        <td data-label="Students" className="td text-right tabular-nums">{r.enrolled}</td>
+                        <td data-label="Billed" className="td text-right tabular-nums">{num(r.billed)}</td>
+                        <td data-label="Paid" className="td text-right tabular-nums font-semibold text-emerald-700">{num(r.paid)}</td>
+                        <td data-label="Remaining" className="td text-right tabular-nums font-semibold text-rose-700">{num(r.remaining)}</td>
                       </tr>
                     ))}
                     {!rows.length && (
@@ -222,7 +222,7 @@ export default function DashboardPage() {
               </Link>
             </div>
             <div className="scroll-thin overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full stack-table">
                 <thead>
                   <tr className="bg-slate-50 text-slate-600">
                     <th className="th">Date</th>
@@ -236,16 +236,16 @@ export default function DashboardPage() {
                 <tbody className="divide-y divide-slate-100">
                   {payments.map((p) => (
                     <tr key={p.id} className="hover:bg-slate-50">
-                      <td className="td text-slate-600">{shortDate(p.paid_on)}</td>
-                      <td className="td font-semibold text-navy-900">{p.students?.full_name || "—"}</td>
-                      <td className="td text-slate-600">{p.students?.classes?.name || "—"}</td>
-                      <td className="td text-slate-600">
+                      <td data-label="Date" className="td text-slate-600">{shortDate(p.paid_on)}</td>
+                      <td data-label="Student" className="td font-semibold text-navy-900">{p.students?.full_name || "—"}</td>
+                      <td data-label="Class" className="td text-slate-600">{p.students?.classes?.name || "—"}</td>
+                      <td data-label="Period" className="td text-slate-600">
                         {p.challans ? periodLabel(p.challans.year, p.challans.month) : "—"}
                       </td>
-                      <td className="td">
+                      <td data-label="Method" className="td">
                         <span className="chip bg-slate-50 text-slate-600 ring-slate-200">{p.method}</span>
                       </td>
-                      <td className="td text-right font-semibold tabular-nums text-emerald-700">{num(p.amount)}</td>
+                      <td data-label="Amount" className="td text-right font-semibold tabular-nums text-emerald-700">{num(p.amount)}</td>
                     </tr>
                   ))}
                   {!payments.length && (

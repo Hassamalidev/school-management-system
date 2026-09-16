@@ -250,7 +250,7 @@ export default function AdmissionPage() {
                     />
                     <button
                       title="Remove line"
-                      className="rounded-lg p-2 text-rose-500 hover:bg-rose-50"
+                      className="icon-btn text-rose-500 hover:bg-rose-50"
                       onClick={() => setLines((p) => p.filter((_, idx) => idx !== i))}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -293,7 +293,7 @@ export default function AdmissionPage() {
 
         {/* ---------------------------------------------------- preview -- */}
         <div className="no-print xl:col-span-2">
-          <div className="card sticky top-24">
+          <div className="card xl:sticky xl:top-24">
             <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
               <div>
                 <h2 className="text-base font-bold text-navy-900">Live preview</h2>
@@ -308,7 +308,7 @@ export default function AdmissionPage() {
                 </button>
               </div>
             </div>
-            <div className="scroll-thin max-h-[70vh] overflow-auto p-5">
+            <div className="scroll-thin max-h-[60vh] xl:max-h-[70vh] overflow-auto p-5">
               <Challan ch={draft} items={draftItems} settings={settings} compact />
             </div>
           </div>

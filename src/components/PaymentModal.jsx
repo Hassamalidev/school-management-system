@@ -148,7 +148,7 @@ export default function PaymentModal({ challan, onClose, onSaved }) {
                     <td className="td">
                       <button
                         title="Remove this payment"
-                        className="rounded-lg p-1.5 text-rose-500 hover:bg-rose-50"
+                        className="icon-btn text-rose-500 hover:bg-rose-50"
                         onClick={async () => {
                           try {
                             await deletePayment(p.id);

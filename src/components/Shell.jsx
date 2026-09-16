@@ -134,7 +134,7 @@ export default function Shell({ children }) {
       {/* --------------------------------------------------------- main -- */}
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="no-print sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur sm:px-6">
-          <button className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden" onClick={() => setMobileOpen(true)}>
+          <button className="icon-btn text-slate-600 hover:bg-slate-100 lg:hidden" onClick={() => setMobileOpen(true)}>
             <Menu className="h-5 w-5" />
           </button>
           <div className="ml-auto flex items-center gap-4">

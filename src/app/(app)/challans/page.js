@@ -253,7 +253,7 @@ export default function ChallansPage() {
             />
           ) : (
             <div className="scroll-thin overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full stack-table">
                 <thead>
                   <tr className="bg-navy-800 text-white">
                     <th className="th w-10" />
@@ -282,44 +282,44 @@ export default function ChallansPage() {
                           onChange={() => toggle(r.id)}
                         />
                       </td>
-                      <td className="td text-slate-400">{i + 1}</td>
-                      <td className="td">
+                      <td data-label="#" className="td text-slate-400">{i + 1}</td>
+                      <td data-label="Student Name" className="td">
                         <div className="font-semibold text-navy-900">{r.student_name}</div>
                         <div className="font-mono text-[10px] text-slate-400">{r.receipt_no}</div>
                       </td>
-                      <td className="td text-slate-600">{r.class_name || "—"}</td>
-                      <td className="td text-right tabular-nums">{num(r.payable)}</td>
-                      <td className="td text-right tabular-nums text-emerald-700">{num(r.paid)}</td>
-                      <td className="td text-right font-semibold tabular-nums text-rose-700">{num(r.remaining)}</td>
-                      <td className="td">
+                      <td data-label="Class" className="td text-slate-600">{r.class_name || "—"}</td>
+                      <td data-label="Total Fee" className="td text-right tabular-nums">{num(r.payable)}</td>
+                      <td data-label="Paid" className="td text-right tabular-nums text-emerald-700">{num(r.paid)}</td>
+                      <td data-label="Remaining" className="td text-right font-semibold tabular-nums text-rose-700">{num(r.remaining)}</td>
+                      <td data-label="Status" className="td">
                         <span className={`chip ${statusTone(r.status)}`}>{r.status}</span>
                       </td>
-                      <td className="td" onClick={(e) => e.stopPropagation()}>
+                      <td data-label="Action" className="td" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-end gap-1">
                           <button
                             title="Record payment"
-                            className="rounded-lg p-2 text-emerald-600 hover:bg-emerald-50"
+                            className="icon-btn text-emerald-600 hover:bg-emerald-50"
                             onClick={() => setPaying(r)}
                           >
                             <Wallet className="h-4 w-4" />
                           </button>
                           <button
                             title="Print challan"
-                            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-navy-900"
+                            className="icon-btn text-slate-500 hover:bg-slate-100 hover:text-navy-900"
                             onClick={() => print([r])}
                           >
                             <Printer className="h-4 w-4" />
                           </button>
                           <button
                             title="Download PDF"
-                            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-navy-900"
+                            className="icon-btn text-slate-500 hover:bg-slate-100 hover:text-navy-900"
                             onClick={() => pdf([r])}
                           >
                             <Download className="h-4 w-4" />
                           </button>
                           <button
                             title="Delete challan"
-                            className="rounded-lg p-2 text-rose-500 hover:bg-rose-50"
+                            className="icon-btn text-rose-500 hover:bg-rose-50"
                             onClick={() => setRemoving(r)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -344,7 +344,7 @@ export default function ChallansPage() {
 
         {/* ----------------------------------------------------- preview -- */}
         <div className="no-print xl:col-span-2">
-          <div className="card sticky top-24">
+          <div className="card xl:sticky xl:top-24">
             <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
               <div>
                 <h2 className="text-base font-bold text-navy-900">Challan Preview</h2>
@@ -359,7 +359,7 @@ export default function ChallansPage() {
                 </button>
               </div>
             </div>
-            <div className="scroll-thin max-h-[70vh] overflow-auto p-5">
+            <div className="scroll-thin max-h-[60vh] xl:max-h-[70vh] overflow-auto p-5">
               {preview ? (
                 <Challan
                   ch={preview}

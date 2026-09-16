@@ -145,7 +145,7 @@ export default function ReportsPage() {
             }
             disabled={!byClass.length}
           >
-            <table className="w-full">
+            <table className="w-full stack-table">
               <thead>
                 <tr className="bg-navy-800 text-white">
                   <th className="th">Class</th>
@@ -160,13 +160,13 @@ export default function ReportsPage() {
               <tbody className="divide-y divide-slate-100">
                 {byClass.map((r) => (
                   <tr key={r.id} className="hover:bg-slate-50">
-                    <td className="td font-semibold text-navy-900">{r.name}</td>
-                    <td className="td text-right tabular-nums">{r.students}</td>
-                    <td className="td text-right tabular-nums">{num(r.billed)}</td>
-                    <td className="td text-right tabular-nums text-emerald-700">{num(r.paid)}</td>
-                    <td className="td text-right font-semibold tabular-nums text-rose-700">{num(r.remaining)}</td>
-                    <td className="td text-right font-semibold tabular-nums">{pct(r.paid, r.billed)}</td>
-                    <td className="td text-right tabular-nums text-slate-500">
+                    <td data-label="Class" className="td font-semibold text-navy-900">{r.name}</td>
+                    <td data-label="Challans" className="td text-right tabular-nums">{r.students}</td>
+                    <td data-label="Billed" className="td text-right tabular-nums">{num(r.billed)}</td>
+                    <td data-label="Paid" className="td text-right tabular-nums text-emerald-700">{num(r.paid)}</td>
+                    <td data-label="Remaining" className="td text-right font-semibold tabular-nums text-rose-700">{num(r.remaining)}</td>
+                    <td data-label="Collected" className="td text-right font-semibold tabular-nums">{pct(r.paid, r.billed)}</td>
+                    <td data-label="Paid / Partial / Unpaid" className="td text-right tabular-nums text-slate-500">
                       {r.paidCount} / {r.partialCount} / {r.unpaidCount}
                     </td>
                   </tr>
@@ -215,7 +215,7 @@ export default function ReportsPage() {
             {!defaulters.length ? (
               <Empty icon={Receipt} title="Everyone has paid" hint={`All ${label} challans are fully settled.`} />
             ) : (
-              <table className="w-full">
+              <table className="w-full stack-table">
                 <thead>
                   <tr className="bg-navy-800 text-white">
                     <th className="th">Student</th>
@@ -232,15 +232,15 @@ export default function ReportsPage() {
                 <tbody className="divide-y divide-slate-100">
                   {defaulters.map((r) => (
                     <tr key={r.id} className="hover:bg-slate-50">
-                      <td className="td font-semibold text-navy-900">{r.student_name}</td>
-                      <td className="td text-slate-600">{r.class_name || "—"}</td>
-                      <td className="td text-slate-600">{r.father_name || "—"}</td>
-                      <td className="td text-slate-600">{r.guardian_name || "—"}</td>
-                      <td className="td text-slate-600">{r.phone || "—"}</td>
-                      <td className="td text-right tabular-nums">{num(r.payable)}</td>
-                      <td className="td text-right tabular-nums text-emerald-700">{num(r.paid)}</td>
-                      <td className="td text-right font-semibold tabular-nums text-rose-700">{num(r.remaining)}</td>
-                      <td className="td">
+                      <td data-label="Student" className="td font-semibold text-navy-900">{r.student_name}</td>
+                      <td data-label="Class" className="td text-slate-600">{r.class_name || "—"}</td>
+                      <td data-label="Father Name" className="td text-slate-600">{r.father_name || "—"}</td>
+                      <td data-label="Guardian" className="td text-slate-600">{r.guardian_name || "—"}</td>
+                      <td data-label="Phone" className="td text-slate-600">{r.phone || "—"}</td>
+                      <td data-label="Payable" className="td text-right tabular-nums">{num(r.payable)}</td>
+                      <td data-label="Paid" className="td text-right tabular-nums text-emerald-700">{num(r.paid)}</td>
+                      <td data-label="Remaining" className="td text-right font-semibold tabular-nums text-rose-700">{num(r.remaining)}</td>
+                      <td data-label="Status" className="td">
                         <span className={`chip ${statusTone(r.status)}`}>{r.status}</span>
                       </td>
                     </tr>
@@ -274,7 +274,7 @@ export default function ReportsPage() {
             {!outstanding.length ? (
               <Empty icon={Receipt} title="No running balances" hint="Every generated challan has been settled in full." />
             ) : (
-              <table className="w-full">
+              <table className="w-full stack-table">
                 <thead>
                   <tr className="bg-navy-800 text-white">
                     <th className="th">Student</th>
@@ -289,13 +289,13 @@ export default function ReportsPage() {
                 <tbody className="divide-y divide-slate-100">
                   {outstanding.map((r) => (
                     <tr key={r.student_id} className="hover:bg-slate-50">
-                      <td className="td font-semibold text-navy-900">{r.full_name}</td>
-                      <td className="td text-slate-600">{r.class_name || "—"}</td>
-                      <td className="td text-right tabular-nums">{r.months_billed}</td>
-                      <td className="td text-right tabular-nums text-amber-700">{r.months_unpaid}</td>
-                      <td className="td text-right tabular-nums">{num(r.total_billed)}</td>
-                      <td className="td text-right tabular-nums text-emerald-700">{num(r.total_paid)}</td>
-                      <td className="td text-right font-semibold tabular-nums text-rose-700">{num(r.total_remaining)}</td>
+                      <td data-label="Student" className="td font-semibold text-navy-900">{r.full_name}</td>
+                      <td data-label="Class" className="td text-slate-600">{r.class_name || "—"}</td>
+                      <td data-label="Months billed" className="td text-right tabular-nums">{r.months_billed}</td>
+                      <td data-label="Months unpaid" className="td text-right tabular-nums text-amber-700">{r.months_unpaid}</td>
+                      <td data-label="Total billed" className="td text-right tabular-nums">{num(r.total_billed)}</td>
+                      <td data-label="Total paid" className="td text-right tabular-nums text-emerald-700">{num(r.total_paid)}</td>
+                      <td data-label="Total remaining" className="td text-right font-semibold tabular-nums text-rose-700">{num(r.total_remaining)}</td>
                     </tr>
                   ))}
                 </tbody>

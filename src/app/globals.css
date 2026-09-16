@@ -25,15 +25,15 @@ body {
   }
 
   .input {
-    @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800
+    @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-base sm:text-sm text-slate-800
            outline-none transition placeholder:text-slate-400
            focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20
            disabled:cursor-not-allowed disabled:bg-slate-100;
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
-           transition disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm
+           font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-0;
   }
 
   .btn-primary {
@@ -66,6 +66,60 @@ body {
 
   .td {
     @apply whitespace-nowrap px-4 py-3 text-sm;
+  }
+
+  /* Icon-only action buttons: 44px touch target on phones, tight on desktop. */
+  .icon-btn {
+    @apply grid h-11 w-11 place-items-center rounded-lg transition sm:h-9 sm:w-9;
+  }
+}
+
+/* ------------------------------------------------- tables on small screens --
+   A .stack-table drops its header row below `sm` and lays each row out as a
+   card, with every cell showing its column name from `data-label`. Above `sm`
+   it is an ordinary table. Cells with no data-label (checkboxes, row numbers,
+   action buttons) print their value alone. */
+@media (max-width: 639px) {
+  .stack-table thead {
+    display: none;
+  }
+
+  .stack-table tbody,
+  .stack-table tfoot,
+  .stack-table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .stack-table tr {
+    @apply border-b border-slate-100 px-4 py-3;
+  }
+
+  .stack-table tfoot tr {
+    @apply bg-amber-50;
+  }
+
+  .stack-table td {
+    @apply flex items-center justify-between gap-3 whitespace-normal px-0 py-1 text-right;
+  }
+
+  .stack-table td::before {
+    content: attr(data-label);
+    @apply flex-none text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500;
+  }
+
+  /* A cell without a label spans the row and keeps its own alignment. */
+  .stack-table td:not([data-label])::before {
+    content: none;
+  }
+
+  .stack-table td:not([data-label]) {
+    @apply justify-end;
+  }
+
+  /* The first labelled cell reads as the card's title. */
+  .stack-table tbody td:first-child {
+    @apply pb-2 text-base;
   }
 }
 

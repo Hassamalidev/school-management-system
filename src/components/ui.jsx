@@ -62,18 +62,22 @@ export function Modal({ open, onClose, title, subtitle, children, width = "max-w
   if (!open) return null;
 
   return (
-    <div className="no-print fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4 sm:p-8">
-      <div className={`w-full ${width} my-auto rounded-2xl bg-white shadow-2xl`}>
-        <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-4">
-          <div>
+    <div className="no-print fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 sm:items-start sm:overflow-y-auto sm:p-8">
+      {/* A bottom sheet on phones, a centred dialog from sm upwards. */}
+      <div
+        className={`flex max-h-[92vh] w-full flex-col rounded-t-2xl bg-white shadow-2xl
+                    sm:my-auto sm:max-h-none sm:rounded-2xl ${width}`}
+      >
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 sm:px-6">
+          <div className="min-w-0">
             <h2 className="text-lg font-bold text-navy-900">{title}</h2>
             {subtitle && <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>}
           </div>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+          <button onClick={onClose} className="icon-btn shrink-0 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="px-6 py-5">{children}</div>
+        <div className="scroll-thin overflow-y-auto px-5 py-5 sm:px-6">{children}</div>
       </div>
     </div>
   );
@@ -113,13 +117,17 @@ export function StatCard({ icon: Icon, label, value, sub, tone = "sky" }) {
     amber: "bg-amber-50 text-amber-600",
   };
   return (
-    <div className="card card-pad flex items-center gap-4">
-      <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl ${tones[tone] || tones.sky}`}>
-        {Icon && <Icon className="h-6 w-6" />}
+    <div className="card flex items-center gap-3 p-4 sm:gap-4 sm:p-6">
+      <div
+        className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl sm:h-12 sm:w-12 ${
+          tones[tone] || tones.sky
+        }`}
+      >
+        {Icon && <Icon className="h-5 w-5 sm:h-6 sm:w-6" />}
       </div>
       <div className="min-w-0">
         <p className="truncate text-[13px] font-medium text-slate-500">{label}</p>
-        <p className="truncate text-xl font-bold text-navy-900">{value}</p>
+        <p className="truncate text-lg font-bold text-navy-900 sm:text-xl">{value}</p>
         {sub && <p className="truncate text-xs text-slate-400">{sub}</p>}
       </div>
     </div>
@@ -136,11 +144,15 @@ export function PageHeader({ title, subtitle, icon: Icon, children }) {
           </div>
         )}
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-navy-900 sm:text-3xl">{title}</h1>
+          <h1 className="text-xl font-bold tracking-tight text-navy-900 sm:text-3xl">{title}</h1>
           {subtitle && <p className="text-sm text-slate-500">{subtitle}</p>}
         </div>
       </div>
-      {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
+      {children && (
+        <div className="flex w-full flex-wrap items-center gap-2 [&>*]:flex-1 sm:w-auto sm:[&>*]:flex-none">
+          {children}
+        </div>
+      )}
     </div>
   );
 }

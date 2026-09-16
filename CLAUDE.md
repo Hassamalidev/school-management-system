@@ -80,6 +80,15 @@ supabase/
   re-spelling long class strings.
 - Anything that must not appear on paper gets `no-print`; the challan markup to
   be printed sits inside `.print-area`.
+- **Data tables carry `stack-table` and every `<td>` a `data-label`.** Below
+  `sm` the stylesheet hides the header row and lays each record out as a card,
+  with the cell showing its column name from that attribute. A cell with no
+  `data-label` (checkbox, row number, action buttons) renders bare. Adding a
+  column means adding its `data-label` to the matching cell — and note that a
+  self-closing `<th ... />` spacer still counts as a column when lining the two
+  up.
+- Inputs are `text-base` below `sm` so iOS does not zoom in on focus; icon-only
+  buttons use `.icon-btn`, which is a 44px touch target on phones.
 
 ## Data model
 

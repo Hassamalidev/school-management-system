@@ -292,7 +292,7 @@ export default function AdmissionFormPage() {
 
         {/* ----------------------------------------------------- preview -- */}
         <div>
-          <div className="card sticky top-24 overflow-hidden">
+          <div className="card xl:sticky xl:top-24 overflow-hidden">
             <div className="border-b border-slate-200 px-5 py-4">
               <h2 className="text-base font-bold text-navy-900">Live preview</h2>
               <p className="text-xs text-slate-500">
@@ -300,7 +300,7 @@ export default function AdmissionFormPage() {
               </p>
             </div>
             {url ? (
-              <iframe src={url} title="Student Admission Form preview" className="h-[75vh] w-full border-0" />
+              <iframe src={url} title="Student Admission Form preview" className="h-[60vh] w-full border-0 xl:h-[75vh]" />
             ) : (
               <Loading label="Building the form…" />
             )}

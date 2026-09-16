@@ -178,7 +178,7 @@ export default function EmployeesPage() {
           />
         ) : (
           <div className="scroll-thin overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full stack-table">
               <thead>
                 <tr className="bg-navy-800 text-white">
                   <th className="th">Employee ID</th>
@@ -196,22 +196,22 @@ export default function EmployeesPage() {
               <tbody className="divide-y divide-slate-100">
                 {visible.map((e) => (
                   <tr key={e.id} className="hover:bg-slate-50">
-                    <td className="td font-mono text-xs text-slate-500">{e.employee_code}</td>
-                    <td className="td">
+                    <td data-label="Employee ID" className="td font-mono text-xs text-slate-500">{e.employee_code}</td>
+                    <td data-label="Name" className="td">
                       <div className="font-semibold text-navy-900">{e.full_name}</div>
                       {e.father_name && <div className="text-xs text-slate-400">{e.father_name}</div>}
                     </td>
-                    <td className="td text-slate-600">{e.designation || "—"}</td>
-                    <td className="td">
+                    <td data-label="Designation" className="td text-slate-600">{e.designation || "—"}</td>
+                    <td data-label="Department" className="td">
                       <span className="chip bg-slate-50 text-slate-600 ring-slate-200">{e.department}</span>
                     </td>
-                    <td className="td text-slate-600">{e.phone || "—"}</td>
-                    <td className="td text-right tabular-nums">{num(e.monthly_salary)}</td>
-                    <td className="td text-right tabular-nums">{num(e.allowances)}</td>
-                    <td className="td text-right font-semibold tabular-nums">
+                    <td data-label="Phone" className="td text-slate-600">{e.phone || "—"}</td>
+                    <td data-label="Salary" className="td text-right tabular-nums">{num(e.monthly_salary)}</td>
+                    <td data-label="Allowances" className="td text-right tabular-nums">{num(e.allowances)}</td>
+                    <td data-label="Gross" className="td text-right font-semibold tabular-nums">
                       {num(Number(e.monthly_salary) + Number(e.allowances))}
                     </td>
-                    <td className="td">
+                    <td data-label="Status" className="td">
                       <span
                         className={`chip ${
                           e.status === "active"
@@ -222,7 +222,7 @@ export default function EmployeesPage() {
                         {e.status === "active" ? "Active" : "Inactive"}
                       </span>
                     </td>
-                    <td className="td">
+                    <td data-label="Actions" className="td">
                       <div className="flex justify-end gap-1">
                         <IconBtn title="Salary history" onClick={() => setViewing(e)}>
                           <Eye className="h-4 w-4" />
@@ -305,7 +305,7 @@ function IconBtn({ children, title, onClick, danger }) {
     <button
       title={title}
       onClick={onClick}
-      className={`rounded-lg p-2 transition ${
+      className={`icon-btn ${
         danger ? "text-rose-500 hover:bg-rose-50" : "text-slate-500 hover:bg-slate-100 hover:text-navy-900"
       }`}
     >
@@ -513,7 +513,7 @@ function SalaryHistory({ employee, onClose }) {
         <Empty icon={Wallet} title="No salary slips yet" hint="Generate this month's payroll to create them." />
       ) : (
         <div className="scroll-thin max-h-[50vh] overflow-auto rounded-xl ring-1 ring-slate-200">
-          <table className="w-full">
+          <table className="w-full stack-table">
             <thead className="sticky top-0 bg-slate-100">
               <tr className="text-slate-600">
                 <th className="th">Month</th>
@@ -528,15 +528,15 @@ function SalaryHistory({ employee, onClose }) {
             <tbody className="divide-y divide-slate-100 bg-white">
               {rows.map((r) => (
                 <tr key={r.id}>
-                  <td className="td font-semibold text-navy-900">{periodLabel(r.year, r.month)}</td>
-                  <td className="td font-mono text-xs text-slate-500">{r.slip_no}</td>
-                  <td className="td text-right tabular-nums">{num(r.net_salary)}</td>
-                  <td className="td text-right tabular-nums text-emerald-700">{num(r.paid)}</td>
-                  <td className="td text-right font-semibold tabular-nums text-rose-700">{num(r.remaining)}</td>
-                  <td className="td">
+                  <td data-label="Month" className="td font-semibold text-navy-900">{periodLabel(r.year, r.month)}</td>
+                  <td data-label="Slip No." className="td font-mono text-xs text-slate-500">{r.slip_no}</td>
+                  <td data-label="Net" className="td text-right tabular-nums">{num(r.net_salary)}</td>
+                  <td data-label="Paid" className="td text-right tabular-nums text-emerald-700">{num(r.paid)}</td>
+                  <td data-label="Remaining" className="td text-right font-semibold tabular-nums text-rose-700">{num(r.remaining)}</td>
+                  <td data-label="Status" className="td">
                     <span className={`chip ${statusTone(r.status)}`}>{r.status}</span>
                   </td>
-                  <td className="td text-slate-500">{r.last_paid_on ? shortDate(r.last_paid_on) : "—"}</td>
+                  <td data-label="Last paid" className="td text-slate-500">{r.last_paid_on ? shortDate(r.last_paid_on) : "—"}</td>
                 </tr>
               ))}
             </tbody>

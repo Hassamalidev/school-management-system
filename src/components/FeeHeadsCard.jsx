@@ -106,7 +106,7 @@ export default function FeeHeadsCard({ classes }) {
         <Loading />
       ) : (
         <div className="scroll-thin overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full stack-table">
             <thead>
               <tr className="bg-navy-800 text-white">
                 <th className="th">Fee Head</th>
@@ -120,11 +120,11 @@ export default function FeeHeadsCard({ classes }) {
             <tbody className="divide-y divide-slate-100">
               {heads.map((h) => (
                 <tr key={h.id} className="hover:bg-slate-50">
-                  <td className="td font-semibold text-navy-900">{h.name}</td>
-                  <td className="td">
+                  <td data-label="Fee Head" className="td font-semibold text-navy-900">{h.name}</td>
+                  <td data-label="Charged" className="td">
                     <span className={`chip ${FREQ_TONE[h.frequency]}`}>{FREQ_LABEL[h.frequency]}</span>
                   </td>
-                  <td className="td text-right">
+                  <td data-label="Default (PKR)" className="td text-right">
                     <InlineNumber
                       value={h.default_amount}
                       title="Default amount, used by any class without its own"
@@ -142,7 +142,7 @@ export default function FeeHeadsCard({ classes }) {
                       <span className="text-slate-400">—</span>
                     )}
                   </td>
-                  <td className="td">
+                  <td data-label="Status" className="td">
                     <span
                       className={`chip ${
                         h.is_active
@@ -153,18 +153,18 @@ export default function FeeHeadsCard({ classes }) {
                       {h.is_active ? "Active" : "Off"}
                     </span>
                   </td>
-                  <td className="td">
+                  <td data-label="Actions" className="td">
                     <div className="flex justify-end gap-1">
                       <button
                         title="Edit"
-                        className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-navy-900"
+                        className="icon-btn text-slate-500 hover:bg-slate-100 hover:text-navy-900"
                         onClick={() => setEditing(h)}
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
                       <button
                         title="Delete"
-                        className="rounded-lg p-2 text-rose-500 hover:bg-rose-50"
+                        className="icon-btn text-rose-500 hover:bg-rose-50"
                         onClick={() => setRemoving(h)}
                       >
                         <Trash2 className="h-4 w-4" />

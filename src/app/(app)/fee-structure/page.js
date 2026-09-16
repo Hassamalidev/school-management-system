@@ -120,7 +120,7 @@ export default function FeeStructurePage() {
               </p>
             </div>
             <div className="scroll-thin overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full stack-table">
                 <thead>
                   <tr className="bg-navy-800 text-white">
                     <th className="th">Class</th>
@@ -135,38 +135,38 @@ export default function FeeStructurePage() {
                 <tbody className="divide-y divide-slate-100">
                   {rows.map((c) => (
                     <tr key={c.id} className={selected === c.id ? "bg-brand-50" : "hover:bg-slate-50"}>
-                      <td className="td">
+                      <td data-label="Class" className="td">
                         <span className={`chip ${SWATCHES[c.color] || SWATCHES.sky}`}>{c.name}</span>
                       </td>
-                      <td className="td text-right">
+                      <td data-label="Monthly Fee (PKR)" className="td text-right">
                         <InlineNumber
                           value={c.monthly_fee}
                           title="Click to edit the monthly fee"
                           onSave={(v) => patchClass(c, { monthly_fee: v })}
                         />
                       </td>
-                      <td className="td text-right">
+                      <td data-label="Annual Fee (PKR)" className="td text-right">
                         <InlineNumber
                           value={c.annual_fee}
                           title="Click to edit the annual fee"
                           onSave={(v) => patchClass(c, { annual_fee: v })}
                         />
                       </td>
-                      <td className="td text-right tabular-nums">{c.students}</td>
-                      <td className="td text-right tabular-nums font-semibold">{num(c.monthlyTotal)}</td>
-                      <td className="td text-right tabular-nums font-semibold">{num(c.annualTotal)}</td>
-                      <td className="td">
+                      <td data-label="Total Students" className="td text-right tabular-nums">{c.students}</td>
+                      <td data-label="Monthly Total" className="td text-right tabular-nums font-semibold">{num(c.monthlyTotal)}</td>
+                      <td data-label="Annual Total" className="td text-right tabular-nums font-semibold">{num(c.annualTotal)}</td>
+                      <td data-label="Actions" className="td">
                         <div className="flex justify-end gap-1">
                           <button
                             title="Edit"
-                            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-navy-900"
+                            className="icon-btn text-slate-500 hover:bg-slate-100 hover:text-navy-900"
                             onClick={() => setEditing(c)}
                           >
                             <Pencil className="h-4 w-4" />
                           </button>
                           <button
                             title="Delete"
-                            className="rounded-lg p-2 text-rose-500 hover:bg-rose-50"
+                            className="icon-btn text-rose-500 hover:bg-rose-50"
                             onClick={() => setRemoving(c)}
                           >
                             <Trash2 className="h-4 w-4" />

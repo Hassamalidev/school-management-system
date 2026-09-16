@@ -203,7 +203,7 @@ export default function PayrollPage() {
               />
             ) : (
               <div className="scroll-thin overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full stack-table">
                   <thead>
                     <tr className="bg-navy-800 text-white">
                       <th className="th">Employee</th>
@@ -221,47 +221,47 @@ export default function PayrollPage() {
                   <tbody className="divide-y divide-slate-100">
                     {visible.map((r) => (
                       <tr key={r.id} className="hover:bg-slate-50">
-                        <td className="td">
+                        <td data-label="Employee" className="td">
                           <div className="font-semibold text-navy-900">{r.employee_name}</div>
                           <div className="font-mono text-[10px] text-slate-400">
                             {r.employee_code} · {r.slip_no}
                           </div>
                         </td>
-                        <td className="td text-slate-600">{r.department}</td>
-                        <td className="td text-right tabular-nums">{num(r.basic)}</td>
-                        <td className="td text-right tabular-nums">{num(r.allowances)}</td>
-                        <td className="td text-right">
+                        <td data-label="Department" className="td text-slate-600">{r.department}</td>
+                        <td data-label="Basic" className="td text-right tabular-nums">{num(r.basic)}</td>
+                        <td data-label="Allowances" className="td text-right tabular-nums">{num(r.allowances)}</td>
+                        <td data-label="Deductions" className="td text-right">
                           <InlineNumber
                             value={r.deductions}
                             title="Click to edit deductions"
                             onSave={(v) => patchDeduction(r, v)}
                           />
                         </td>
-                        <td className="td text-right font-semibold tabular-nums">{num(r.net_salary)}</td>
-                        <td className="td text-right tabular-nums text-emerald-700">{num(r.paid)}</td>
-                        <td className="td text-right font-semibold tabular-nums text-rose-700">{num(r.remaining)}</td>
-                        <td className="td">
+                        <td data-label="Net" className="td text-right font-semibold tabular-nums">{num(r.net_salary)}</td>
+                        <td data-label="Paid" className="td text-right tabular-nums text-emerald-700">{num(r.paid)}</td>
+                        <td data-label="Remaining" className="td text-right font-semibold tabular-nums text-rose-700">{num(r.remaining)}</td>
+                        <td data-label="Status" className="td">
                           <span className={`chip ${statusTone(r.status)}`}>{r.status}</span>
                         </td>
-                        <td className="td">
+                        <td data-label="Actions" className="td">
                           <div className="flex justify-end gap-1">
                             <button
                               title="Pay salary"
-                              className="rounded-lg p-2 text-emerald-600 hover:bg-emerald-50"
+                              className="icon-btn text-emerald-600 hover:bg-emerald-50"
                               onClick={() => setPaying(r)}
                             >
                               <Wallet className="h-4 w-4" />
                             </button>
                             <button
                               title="Download slip"
-                              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-navy-900"
+                              className="icon-btn text-slate-500 hover:bg-slate-100 hover:text-navy-900"
                               onClick={() => pdf([r])}
                             >
                               <Download className="h-4 w-4" />
                             </button>
                             <button
                               title="Delete slip"
-                              className="rounded-lg p-2 text-rose-500 hover:bg-rose-50"
+                              className="icon-btn text-rose-500 hover:bg-rose-50"
                               onClick={() => setRemoving(r)}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -301,7 +301,7 @@ export default function PayrollPage() {
                 <p className="text-xs text-slate-500">{label}</p>
               </div>
               <div className="scroll-thin overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full stack-table">
                   <thead>
                     <tr className="bg-slate-50 text-slate-600">
                       <th className="th">Department</th>
@@ -315,12 +315,12 @@ export default function PayrollPage() {
                   <tbody className="divide-y divide-slate-100">
                     {byDept.map((d) => (
                       <tr key={d.department} className="hover:bg-slate-50">
-                        <td className="td font-semibold text-navy-900">{d.department}</td>
-                        <td className="td text-right tabular-nums">{d.count}</td>
-                        <td className="td text-right tabular-nums">{num(d.net)}</td>
-                        <td className="td text-right tabular-nums text-emerald-700">{num(d.paid)}</td>
-                        <td className="td text-right tabular-nums text-rose-700">{num(d.remaining)}</td>
-                        <td className="td text-right tabular-nums">
+                        <td data-label="Department" className="td font-semibold text-navy-900">{d.department}</td>
+                        <td data-label="Staff" className="td text-right tabular-nums">{d.count}</td>
+                        <td data-label="Net payable" className="td text-right tabular-nums">{num(d.net)}</td>
+                        <td data-label="Paid" className="td text-right tabular-nums text-emerald-700">{num(d.paid)}</td>
+                        <td data-label="Remaining" className="td text-right tabular-nums text-rose-700">{num(d.remaining)}</td>
+                        <td data-label="Share of payroll" className="td text-right tabular-nums">
                           {t.net > 0 ? `${Math.round((d.net / t.net) * 100)}%` : "—"}
                         </td>
                       </tr>
