@@ -228,6 +228,9 @@ Authentication → Users.
   simply prints an empty rule. Nothing about it is stored — it is a document
   generator, not a record. Blob URLs from `admissionFormBlobUrl` must be revoked
   when replaced, or each keystroke leaks one.
+- The pay-to panel is the challan's focal point: the account number is set at
+  15pt against 9pt body text, because it is the one thing a parent has to read
+  correctly. Keep it that way if the layout is reworked.
 - Slips in the PDF vary in height with the number of fee lines, so
   `downloadChallanPDF` measures each with `slipHeight()` and packs two onto a
   sheet only when both fit. `slipHeight` must stay in step with what

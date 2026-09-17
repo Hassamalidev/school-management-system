@@ -122,30 +122,61 @@ export default function Challan({ ch, items = [], settings = {}, compact = false
         {ch.last_paid_on && <span className="ml-auto text-xs font-medium">Last payment {dmy(ch.last_paid_on)}</span>}
       </div>
 
-      {/* ------------------------------------------------------ bank box -- */}
-      <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2.5 ring-1 ring-slate-200">
-        <div className="text-[11px] font-bold uppercase tracking-wide text-navy-900">Payment Method</div>
-        <div className="mt-1 grid grid-cols-2 gap-x-6 gap-y-0.5 text-[11px] text-slate-600">
-          <span>{settings.bank_name || "Meezan Bank - G-13 BR-ISLAMABAD"}</span>
-          <span>Account Title: <b>{settings.bank_title || "JIBRAN SULEMAN"}</b></span>
-          <span>Account Number: <b>{settings.account_number || "03200109242922"}</b></span>
-          <span>IBAN: <b>{settings.iban || "PK32MEZN0003200109242922"}</b></span>
+      {/* ------------------------------------------- where to pay -- */}
+      <div className="mt-3 overflow-hidden rounded-lg border-2 border-brand-700">
+        <div className="flex items-center justify-between gap-3 bg-brand-700 px-3 py-1.5">
+          <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-white">
+            Pay to — Bank Details
+          </span>
+          <span className="text-[10px] font-semibold text-brand-100">Cash also accepted at the office</span>
         </div>
-        <div className="mt-1.5 text-[11px] text-slate-500">Accepted: Cash · Bank Transfer · Other</div>
+
+        <div className="grid grid-cols-5 gap-x-4 bg-brand-50/60 px-3 py-2.5">
+          {/* the number parents actually need, given the most weight */}
+          <div className="col-span-3">
+            <div className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-500">
+              Account Number
+            </div>
+            <div className="font-mono text-xl font-extrabold leading-tight tracking-[0.06em] text-navy-900">
+              {settings.account_number || "03200109242922"}
+            </div>
+          </div>
+          <div className="col-span-2">
+            <div className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-500">Account Title</div>
+            <div className="text-sm font-bold leading-tight text-navy-900">
+              {settings.bank_title || "JIBRAN SULEMAN"}
+            </div>
+          </div>
+
+          <div className="col-span-3 mt-2">
+            <div className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-500">IBAN</div>
+            <div className="font-mono text-[13px] font-bold tracking-wide text-navy-900">
+              {settings.iban || "PK32MEZN0003200109242922"}
+            </div>
+          </div>
+          <div className="col-span-2 mt-2">
+            <div className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-500">Bank</div>
+            <div className="text-[11px] font-semibold text-navy-900">
+              {settings.bank_name || "Meezan Bank - G-13 BR-ISLAMABAD"}
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* ------------------------------------------------------ footer -- */}
-      <div className="mt-4 flex items-end justify-between gap-6">
-        <div className="space-y-1 text-[10px] text-slate-500">
-          <div className="flex items-center gap-1.5">
-            <MapPin className="h-3 w-3 shrink-0 text-brand-700" />
-            {settings.address || "Service road South G-12/1, Islamabad (Opposite to metro bus station)"}
+      {/* ------------------------------------------- school details -- */}
+      <div className="mt-3 flex items-end justify-between gap-6 border-t border-slate-300 pt-2">
+        <div className="space-y-0.5 text-[11px] text-slate-600">
+          <div className="flex items-start gap-1.5">
+            <MapPin className="mt-0.5 h-3 w-3 shrink-0 text-brand-700" />
+            <span className="font-medium">
+              {settings.address || "Service road South G-12/1, Islamabad (Opposite to metro bus station)"}
+            </span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Phone className="h-3 w-3 shrink-0 text-brand-700" />
-            {settings.phone || "+92 312 3177778"}
-          </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5">
+            <span className="flex items-center gap-1.5 font-semibold text-navy-900">
+              <Phone className="h-3 w-3 shrink-0 text-brand-700" />
+              {settings.phone || "+92 312 3177778"}
+            </span>
             <span className="flex items-center gap-1.5">
               <Instagram className="h-3 w-3 shrink-0 text-brand-700" />
               {settings.instagram || "kindlesprout"}

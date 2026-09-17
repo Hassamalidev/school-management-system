@@ -21,11 +21,13 @@ const GAP = 6; // space between two slips on the same sheet
 
 const FIELD_H = 5.6;
 const ROW_H = 5.8;
-// Everything on a slip except the variable fee rows and detail rows.
-// Verified against drawChallan by the layout check in the README.
-const CHROME_H = 65;
-const DETAIL_ROWS = 6;
+// Everything on a slip except the variable fee rows and detail rows: header,
+// pay-to panel, status strip, school details and signature. Must equal what
+// drawChallan really draws — the layout check compares predicted with actual.
+const CHROME_H = 70;
+const DETAIL_ROWS = 5;
 const BLANK_BOX_H = 13; // dashed hand-fill box for one-time charges
+const BANK_H = 24; // the prominent pay-to panel
 
 /**
  * How tall this slip will be, in mm. The fee table grows with the number of
@@ -150,11 +152,11 @@ function drawChallan(doc, ch, settings, top, items = [], blankHeads = [], logo =
   doc.setFontSize(9.5);
   doc.text(isAdmission ? "New Admission" : periodLabel(ch.year, ch.month), M + W, y + 13.5, { align: "right" });
 
-  y += 18;
+  y += 17;
   doc.setDrawColor(...GREEN);
   doc.setLineWidth(0.8);
   doc.line(M, y, M + W, y);
-  y += 5;
+  y += 4;
 
   /* -------------------------------------------------------- detail rows */
   const colW = W / 2;
@@ -169,7 +171,6 @@ function drawChallan(doc, ch, settings, top, items = [], blankHeads = [], logo =
     ["Roll No.", ch.roll_no || "-"],
     ["Received From", ch.guardian_name || ch.father_name || "-"],
     ["Contact", ch.phone || "-"],
-    ["Admission Date", dmy(ch.admission_date)],
     [isAdmission ? "Session" : "Month / Period", periodLabel(ch.year, ch.month)],
     ["Due Date", dmy(ch.due_date)],
   ];
@@ -272,48 +273,67 @@ function drawChallan(doc, ch, settings, top, items = [], blankHeads = [], logo =
     doc.setFont("helvetica", "normal").setFontSize(7.5);
     doc.text(`Last payment: ${dmy(ch.last_paid_on)}`, M + W - 3, y + 5.5, { align: "right" });
   }
-  y += 11;
+  y += 10;
 
-  /* ------------------------------------------------------------ bank box */
-  doc.setFillColor(248, 250, 252);
-  doc.setDrawColor(...LINE).setLineWidth(0.2);
-  doc.roundedRect(M, y, W, 15, 1.5, 1.5, "FD");
-  doc.setTextColor(...NAVY).setFont("helvetica", "bold").setFontSize(7.5);
-  doc.text("PAYMENT METHOD", M + 3, y + 4.2);
-  doc.setFont("helvetica", "normal").setFontSize(7).setTextColor(...GREY);
-  doc.text(
-    `${settings.bank_name || "Meezan Bank - G-13 BR-ISLAMABAD"}   |   Title: ${
-      settings.bank_title || "JIBRAN SULEMAN"
-    }`,
-    M + 3,
-    y + 8.6
-  );
-  doc.text(
-    `A/C: ${settings.account_number || "03200109242922"}   |   IBAN: ${
-      settings.iban || "PK32MEZN0003200109242922"
-    }   |   Cash / Bank Transfer / Other`,
-    M + 3,
-    y + 12.6
-  );
-  y += 18;
+  /* ---------------------------------------------------------- pay-to box */
+  // The account number is what a parent actually needs, so it gets the weight.
+  doc.setFillColor(243, 249, 245);
+  doc.setDrawColor(...GREEN).setLineWidth(0.6);
+  doc.roundedRect(M, y, W, BANK_H, 1.6, 1.6, "FD");
+
+  doc.setFillColor(...GREEN);
+  doc.roundedRect(M, y, W, 5.4, 1.6, 1.6, "F");
+  doc.rect(M, y + 3, W, 2.4, "F"); // square off the strip's lower edge
+  doc.setTextColor(255, 255, 255).setFont("helvetica", "bold").setFontSize(7.5);
+  doc.text("PAY TO  -  BANK DETAILS", M + 3, y + 3.8);
+  doc.setFont("helvetica", "normal").setFontSize(6.5);
+  doc.text("Cash also accepted at the school office", M + W - 3, y + 3.8, { align: "right" });
+
+  const colB = M + W * 0.58;
+  const label = (text, x, ly) => {
+    doc.setFont("helvetica", "bold").setFontSize(6).setTextColor(...GREY);
+    doc.text(text, x, ly);
+  };
+
+  label("ACCOUNT NUMBER", M + 3, y + 9.5);
+  doc.setFont("helvetica", "bold").setFontSize(15).setTextColor(...NAVY);
+  doc.text(String(settings.account_number || "03200109242922"), M + 3, y + 15.6);
+
+  label("ACCOUNT TITLE", colB, y + 9.5);
+  doc.setFont("helvetica", "bold").setFontSize(10).setTextColor(...NAVY);
+  doc.text(clip(doc, String(settings.bank_title || "JIBRAN SULEMAN"), W * 0.4), colB, y + 14.6);
+
+  label("IBAN", M + 3, y + 18.6);
+  doc.setFont("helvetica", "bold").setFontSize(10).setTextColor(...NAVY);
+  doc.text(String(settings.iban || "PK32MEZN0003200109242922"), M + 3, y + 22.6);
+
+  label("BANK", colB, y + 18.6);
+  doc.setFont("helvetica", "normal").setFontSize(8).setTextColor(...NAVY);
+  doc.text(clip(doc, String(settings.bank_name || "Meezan Bank - G-13 BR-ISLAMABAD"), W * 0.4), colB, y + 22.5);
+
+  y += BANK_H + 2;
 
   /* -------------------------------------------------------------- footer */
-  doc.setFontSize(7).setTextColor(...GREY);
+  doc.setDrawColor(...LINE).setLineWidth(0.3);
+  doc.line(M, y - 3, M + W, y - 3);
+
+  doc.setFont("helvetica", "bold").setFontSize(7.5).setTextColor(...NAVY);
   doc.text(
     clip(doc, settings.address || "Service road South G-12/1, Islamabad (Opposite to metro bus station)", W - 58),
     M,
     y
   );
+  doc.setFont("helvetica", "normal").setFontSize(7.5).setTextColor(...GREY);
   doc.text(
     clip(
       doc,
-      `Phone: ${settings.phone || "+92 312 3177778"}   |   Instagram: ${
+      `Phone: ${settings.phone || "+92 312 3177778"}    Instagram: ${
         settings.instagram || "kindlesprout"
-      }   |   Facebook: ${settings.facebook || "Kindle Sprout Daycare and School"}`,
+      }    Facebook: ${settings.facebook || "Kindle Sprout Daycare and School"}`,
       W - 58
     ),
     M,
-    y + 4
+    y + 4.2
   );
 
   doc.setDrawColor(...GREY).setLineWidth(0.2);
