@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Download, FileText, Printer, Search, Trash2, Wallet } from "lucide-react";
+import { Download, FileText, MessageCircle, Printer, Search, Trash2, Wallet } from "lucide-react";
 import {
   deleteChallan,
   feeFor,
@@ -20,6 +20,8 @@ import { Confirm, Empty, Loading, PageHeader, Spinner, useToast } from "@/compon
 import PeriodPicker from "@/components/PeriodPicker";
 import PaymentModal from "@/components/PaymentModal";
 import Challan from "@/components/Challan";
+import SendChallanModal from "@/components/SendChallanModal";
+import { canMessage } from "@/lib/whatsapp";
 
 export default function ChallansPage() {
   const toast = useToast();
@@ -41,6 +43,7 @@ export default function ChallansPage() {
   const [paying, setPaying] = useState(null);
   const [removing, setRemoving] = useState(null);
   const [printQueue, setPrintQueue] = useState([]);
+  const [sending, setSending] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -197,6 +200,14 @@ export default function ChallansPage() {
           <button className="btn-secondary flex-1" onClick={() => print(visible)} disabled={!visible.length}>
             <Printer className="h-4 w-4" /> Print All
           </button>
+          <button
+            className="btn-secondary flex-1"
+            onClick={() => setSending(visible)}
+            disabled={!visible.length}
+            title="Send each parent their challan on WhatsApp"
+          >
+            <MessageCircle className="h-4 w-4" /> Send All
+          </button>
         </div>
 
         <label className="flex items-center gap-2 text-sm text-slate-600 lg:col-span-12">
@@ -239,6 +250,9 @@ export default function ChallansPage() {
               </button>
               <button className="btn-secondary !py-2 text-xs" onClick={() => pdf(selected)}>
                 <Download className="h-3.5 w-3.5" /> Download PDF
+              </button>
+              <button className="btn-secondary !py-2 text-xs" onClick={() => setSending(selected)}>
+                <MessageCircle className="h-3.5 w-3.5" /> Send on WhatsApp
               </button>
             </div>
           )}
@@ -302,6 +316,18 @@ export default function ChallansPage() {
                             onClick={() => setPaying(r)}
                           >
                             <Wallet className="h-4 w-4" />
+                          </button>
+                          <button
+                            title={
+                              canMessage(r.phone)
+                                ? `Send to ${r.student_name}'s parent on WhatsApp`
+                                : "No usable mobile number on this student's record"
+                            }
+                            className="icon-btn text-emerald-600 hover:bg-emerald-50 disabled:opacity-30"
+                            disabled={!canMessage(r.phone)}
+                            onClick={() => setSending([r])}
+                          >
+                            <MessageCircle className="h-4 w-4" />
                           </button>
                           <button
                             title="Print challan"
@@ -392,6 +418,15 @@ export default function ChallansPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {sending && (
+        <SendChallanModal
+          challans={sending}
+          items={items}
+          settings={settings}
+          onClose={() => setSending(null)}
+        />
       )}
 
       <PaymentModal challan={paying} onClose={() => setPaying(null)} onSaved={load} />

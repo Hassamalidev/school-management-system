@@ -52,6 +52,7 @@ src/
     FeeHeadsCard.jsx       manage fee heads and their per-class amounts
     PaymentModal.jsx       record a payment against one month's challan
     SalaryPaymentModal.jsx record a payment against one month's salary
+    SendChallanModal.jsx   walks the office through WhatsApp-ing challans
     PeriodPicker.jsx       month + year selector
     Logo.jsx               the school crest (prefers public/logo.png)
     ui.jsx                 Modal, Toast, StatCard, PageHeader, Confirm, …
@@ -64,6 +65,7 @@ src/
     logoSvg.js             the crest as SVG markup — the one source of truth
     logoImage.js           that crest as a PNG data URL for the PDF writers
     admissionFormPdf.js    the Student Admission Form, drawn as a 2-page PDF
+    whatsapp.js            phone normalising + the challan message text
 supabase/
   schema.sql               tables, views, RLS, seed classes — run once
 ```
@@ -147,6 +149,16 @@ Payroll deliberately mirrors the fee side: `salaries` is to `challans` what
 `salary_payments` is to `payments`, and `salary_details` is the payroll twin of
 `challan_details`. Keep them symmetrical — a change to one usually belongs in
 the other.
+
+Challans are sent to parents over **WhatsApp click-to-send**: `whatsapp.js`
+builds a `wa.me` link carrying the message, and the staff member presses send
+in WhatsApp. There is no gateway and no API key, so this costs nothing and the
+message comes from the school's own number — but it cannot attach the PDF, and
+a browser will only open one window per click, which is why `SendChallanModal`
+is a queue rather than a "send all at once" button. `normalisePhone()` accepts
+the shapes the office actually types (`+92 3xx`, `03xx`, `00923xx`, `3xx`) and
+returns null for anything unusable, so those students are listed for fixing
+instead of opening a chat with a wrong number.
 
 **Expected billing and issued challans are different numbers.** `expectedBilling(student)`
 is the student's own monthly fee (or their class's) less their discount — what
