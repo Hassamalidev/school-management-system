@@ -393,19 +393,47 @@ export async function deletePayment(id) {
 
 /* ------------------------------------------------------------- aggregates */
 
-/** Totals for one month, grouped by class — powers the dashboard and reports. */
-export function summariseByClass(challans, classes) {
+/** A student's headline monthly fee: their own if set, else their class's. */
+export function effectiveFee(student) {
+  return Number(student.monthly_fee ?? student.classes?.monthly_fee ?? 0);
+}
+
+/** What that student should actually be charged this month, after discount. */
+export function expectedBilling(student) {
+  return Math.max(effectiveFee(student) - (Number(student.discount) || 0), 0);
+}
+
+/**
+ * Totals for one month, grouped by class.
+ *
+ * Two different numbers live here and they are not the same thing:
+ *
+ *   `expected` — what the current student records say should be charged. This
+ *                is the planning figure and it always agrees with the Students
+ *                page, because it is derived from exactly those rows.
+ *   `issued`   — the sum of challans actually generated for the month. Challans
+ *                are snapshots, so this lags whenever a fee changed, a discount
+ *                was added, or a student joined after the run.
+ *
+ * Pass `students` to get `expected`; without it only the issued figures are
+ * filled in (the reports page wants the issued view on its own).
+ */
+export function summariseByClass(challans, classes, students = null) {
   const byId = new Map();
   classes.forEach((c) =>
     byId.set(c.id, {
       ...c,
-      students: 0,
-      billed: 0,
+      students: 0,        // challans issued for this class
+      enrolled: 0,        // active students on the books
+      expected: 0,        // from the student records
+      issued: 0,          // from the challans that exist
+      billed: 0,          // alias of `issued`, kept for existing callers
       paid: 0,
       remaining: 0,
       paidCount: 0,
       partialCount: 0,
       unpaidCount: 0,
+      withoutChallan: 0,
     })
   );
 
@@ -413,13 +441,25 @@ export function summariseByClass(challans, classes) {
     const row = byId.get(ch.class_id);
     if (!row) return;
     row.students += 1;
-    row.billed += Number(ch.payable) || 0;
+    row.issued += Number(ch.payable) || 0;
+    row.billed = row.issued;
     row.paid += Number(ch.paid) || 0;
     row.remaining += Number(ch.remaining) || 0;
     if (ch.status === "Paid") row.paidCount += 1;
     else if (ch.status === "Partial") row.partialCount += 1;
     else row.unpaidCount += 1;
   });
+
+  if (students) {
+    const billedIds = new Set(challans.map((ch) => ch.student_id));
+    students.forEach((st) => {
+      const row = byId.get(st.class_id);
+      if (!row) return;
+      row.enrolled += 1;
+      row.expected += expectedBilling(st);
+      if (!billedIds.has(st.id)) row.withoutChallan += 1;
+    });
+  }
 
   return [...byId.values()].sort((a, b) => a.sort_order - b.sort_order);
 }

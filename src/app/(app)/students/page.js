@@ -197,6 +197,11 @@ export default function StudentsPage() {
                       <td data-label="Monthly Fee" className="td text-right tabular-nums">
                         {num(fee)}
                         {s.monthly_fee != null && <span className="ml-1 text-[10px] text-amber-600">custom</span>}
+                        {Number(s.discount) > 0 && (
+                          <div className="text-[10px] font-normal text-rose-600">
+                            less {num(s.discount)} discount = {num(Math.max(fee - Number(s.discount), 0))}
+                          </div>
+                        )}
                       </td>
                       <td data-label="Paid" className="td text-right font-semibold tabular-nums text-emerald-700">
                         {num(bal?.total_paid || 0)}

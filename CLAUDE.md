@@ -53,7 +53,7 @@ src/
     PaymentModal.jsx       record a payment against one month's challan
     SalaryPaymentModal.jsx record a payment against one month's salary
     PeriodPicker.jsx       month + year selector
-    Logo.jsx               inline SVG school mark
+    Logo.jsx               the school crest (prefers public/logo.png)
     ui.jsx                 Modal, Toast, StatCard, PageHeader, Confirm, …
   lib/
     supabase.js            browser client singleton
@@ -61,7 +61,8 @@ src/
     format.js              currency, dates, CSV download
     pdf.js                 challan PDF generation
     salaryPdf.js           salary slip PDF generation
-    logoImage.js           public/logo.png as a data URL for the PDF writers
+    logoSvg.js             the crest as SVG markup — the one source of truth
+    logoImage.js           that crest as a PNG data URL for the PDF writers
     admissionFormPdf.js    the Student Admission Form, drawn as a 2-page PDF
 supabase/
   schema.sql               tables, views, RLS, seed classes — run once
@@ -89,6 +90,13 @@ supabase/
   up.
 - Inputs are `text-base` below `sm` so iOS does not zoom in on focus; icon-only
   buttons use `.icon-btn`, which is a 44px touch target on phones.
+- **The logo lives once, in `lib/logoSvg.js`.** `<Logo>` renders that markup,
+  `lib/logoImage.js` rasterises it through a canvas into the PNG data URL the
+  jsPDF writers need, and `app/icon.svg` is a copy of it for the browser tab.
+  If a raster original is dropped in at `public/logo.png` it wins everywhere
+  automatically — `<Logo>` probes it once per page and `logoDataUrl()` prefers
+  it — so no code changes when the artwork arrives. Regenerate the favicon after
+  editing the crest; it is a plain copy of the string.
 
 ## Data model
 
@@ -139,6 +147,17 @@ Payroll deliberately mirrors the fee side: `salaries` is to `challans` what
 `salary_payments` is to `payments`, and `salary_details` is the payroll twin of
 `challan_details`. Keep them symmetrical — a change to one usually belongs in
 the other.
+
+**Expected billing and issued challans are different numbers.** `expectedBilling(student)`
+is the student's own monthly fee (or their class's) less their discount — what
+*should* be charged this month, and it always agrees with the Students page.
+A challan is a snapshot taken at generation, so it lags whenever a fee or
+discount changed afterwards, and a student enrolled after the run has none at
+all. `summariseByClass(challans, classes, students)` returns both: `expected`
+from the student rows and `issued` from the challans. The dashboard leads with
+`expected` and flags any class where the two disagree; Reports deliberately
+shows the issued view, because that is the audit trail. Never "fix" a
+divergence by rewriting issued challans.
 
 **Paid and remaining are never stored.** The `challan_details` and
 `salary_details` views derive `paid`, `remaining` and `status` (`Paid` /

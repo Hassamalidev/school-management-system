@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  AlertTriangle,
   BarChart3,
   ChevronRight,
   Clock,
@@ -18,6 +19,7 @@ import {
   fetchPayments,
   fetchStudents,
   saveClass,
+  expectedBilling,
   summariseByClass,
   totals,
 } from "@/lib/db";
@@ -61,13 +63,12 @@ export default function DashboardPage() {
 
   const t = useMemo(() => totals(challans), [challans]);
 
-  // Class rows combine the fee structure with this month's billing.
-  const rows = useMemo(() => {
-    const billed = summariseByClass(challans, classes);
-    const headcount = new Map();
-    students.forEach((s) => headcount.set(s.class_id, (headcount.get(s.class_id) || 0) + 1));
-    return billed.map((r) => ({ ...r, enrolled: headcount.get(r.id) || 0 }));
-  }, [challans, classes, students]);
+  // Class rows carry both figures: what the student records say should be
+  // charged, and what the issued challans actually add up to.
+  const rows = useMemo(
+    () => summariseByClass(challans, classes, students),
+    [challans, classes, students]
+  );
 
   // The monthly fee is editable right here as well as on Fee Structure.
   const patchFee = async (row, monthly_fee) => {
@@ -76,7 +77,24 @@ export default function DashboardPage() {
     toast(`${saved.name} monthly fee updated to ${num(monthly_fee)}.`);
   };
 
-  const expectedMonthly = rows.reduce((sum, r) => sum + r.enrolled * Number(r.monthly_fee || 0), 0);
+  // From each student's own fee and discount — not class fee x headcount,
+  // which silently ignores per-student overrides.
+  const expectedMonthly = useMemo(
+    () => students.reduce((sum, st) => sum + expectedBilling(st), 0),
+    [students]
+  );
+
+  const totalPaid = rows.reduce((sum, r) => sum + r.paid, 0);
+  const totalIssued = rows.reduce((sum, r) => sum + r.issued, 0);
+
+  // Classes where the issued challans no longer match the student records.
+  const drift = useMemo(
+    () =>
+      rows.filter(
+        (r) => r.enrolled > 0 && (r.withoutChallan > 0 || Math.round(r.issued) !== Math.round(r.expected))
+      ),
+    [rows]
+  );
 
   return (
     <>
@@ -98,21 +116,21 @@ export default function DashboardPage() {
               icon={Wallet}
               tone="violet"
               label="Billed this month"
-              value={pkr(t.billed)}
-              sub={`${t.count} challan${t.count === 1 ? "" : "s"} generated`}
+              value={pkr(expectedMonthly)}
+              sub={`${t.count} challan${t.count === 1 ? "" : "s"} issued, worth ${pkr(totalIssued)}`}
             />
             <StatCard
               icon={Receipt}
               tone="green"
               label="Paid"
               value={pkr(t.paid)}
-              sub={t.billed ? `${Math.round((t.paid / t.billed) * 100)}% collected` : "—"}
+              sub={expectedMonthly ? `${Math.round((t.paid / expectedMonthly) * 100)}% of expected` : "—"}
             />
             <StatCard
               icon={Clock}
               tone="rose"
               label="Remaining"
-              value={pkr(t.remaining)}
+              value={pkr(Math.max(expectedMonthly - t.paid, 0))}
               sub={`${t.unpaidCount} unpaid · ${t.partialCount} partial`}
             />
           </div>
@@ -124,7 +142,8 @@ export default function DashboardPage() {
                 <div>
                   <h2 className="text-base font-bold text-navy-900">Class Fee Details</h2>
                   <p className="text-xs text-slate-500">
-                    {periodLabel(period.year, period.month)} collection · click a monthly fee to edit it
+                    {periodLabel(period.year, period.month)} · billed from the student records · click a
+                    monthly fee to edit it
                   </p>
                 </div>
                 <Link href="/fee-structure" className="btn-secondary !py-2 text-xs">
@@ -156,9 +175,29 @@ export default function DashboardPage() {
                           />
                         </td>
                         <td data-label="Students" className="td text-right tabular-nums">{r.enrolled}</td>
-                        <td data-label="Billed" className="td text-right tabular-nums">{num(r.billed)}</td>
+                        <td data-label="Billed" className="td text-right tabular-nums">
+                          <span className="inline-flex items-center justify-end gap-1.5">
+                            {num(r.expected)}
+                            {r.enrolled > 0 && Math.round(r.issued) !== Math.round(r.expected) && (
+                              <AlertTriangle
+                                className="h-3.5 w-3.5 shrink-0 text-amber-500"
+                                title={`Challans issued for ${periodLabel(period.year, period.month)} total ${num(
+                                  r.issued
+                                )}${
+                                  r.withoutChallan
+                                    ? ` and ${r.withoutChallan} student${
+                                        r.withoutChallan === 1 ? " has" : "s have"
+                                      } none yet`
+                                    : ""
+                                }. Regenerate the month's challans to bring them in line.`}
+                              />
+                            )}
+                          </span>
+                        </td>
                         <td data-label="Paid" className="td text-right tabular-nums font-semibold text-emerald-700">{num(r.paid)}</td>
-                        <td data-label="Remaining" className="td text-right tabular-nums font-semibold text-rose-700">{num(r.remaining)}</td>
+                        <td data-label="Remaining" className="td text-right tabular-nums font-semibold text-rose-700">
+                          {num(Math.max(r.expected - r.paid, 0))}
+                        </td>
                       </tr>
                     ))}
                     {!rows.length && (
@@ -174,13 +213,32 @@ export default function DashboardPage() {
                       <td className="td">Total</td>
                       <td className="td text-right">—</td>
                       <td className="td text-right tabular-nums">{students.length}</td>
-                      <td className="td text-right tabular-nums">{num(t.billed)}</td>
-                      <td className="td text-right tabular-nums text-emerald-700">{num(t.paid)}</td>
-                      <td className="td text-right tabular-nums text-rose-700">{num(t.remaining)}</td>
+                      <td className="td text-right tabular-nums">{num(expectedMonthly)}</td>
+                      <td className="td text-right tabular-nums text-emerald-700">{num(totalPaid)}</td>
+                      <td className="td text-right tabular-nums text-rose-700">
+                        {num(Math.max(expectedMonthly - totalPaid, 0))}
+                      </td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
+
+              {drift.length > 0 && (
+                <div className="flex items-start gap-2.5 border-t border-amber-200 bg-amber-50 px-5 py-3 text-xs text-amber-900">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <p>
+                    <b>Billed above comes from the student records</b>, which is what should be charged this
+                    month. The challans already issued for{" "}
+                    {drift.map((r) => r.name).join(", ")} add up to {pkr(totalIssued)} instead of{" "}
+                    {pkr(expectedMonthly)} — they were generated before a fee or discount changed, or a student
+                    joined afterwards. Issued challans keep their original amounts on purpose;{" "}
+                    <Link href="/challans" className="font-semibold underline">
+                      generate this month&rsquo;s challans
+                    </Link>{" "}
+                    to cover anyone missing.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* ----------------------------------------------- side column -- */}
@@ -188,10 +246,22 @@ export default function DashboardPage() {
               <div className="card card-pad">
                 <h2 className="text-base font-bold text-navy-900">Fee Overview</h2>
                 <dl className="mt-4 space-y-3">
-                  <Overview label="Expected monthly (all active students)" value={pkr(expectedMonthly)} tone="bg-sky-50 text-sky-800" />
-                  <Overview label="Billed this month" value={pkr(t.billed)} tone="bg-violet-50 text-violet-800" />
+                  <Overview
+                    label="Should be billed (from student records)"
+                    value={pkr(expectedMonthly)}
+                    tone="bg-sky-50 text-sky-800"
+                  />
+                  <Overview
+                    label="Challans actually issued"
+                    value={pkr(totalIssued)}
+                    tone="bg-violet-50 text-violet-800"
+                  />
                   <Overview label="Paid" value={pkr(t.paid)} tone="bg-emerald-50 text-emerald-800" />
-                  <Overview label="Remaining" value={pkr(t.remaining)} tone="bg-rose-50 text-rose-800" />
+                  <Overview
+                    label="Remaining (expected less paid)"
+                    value={pkr(Math.max(expectedMonthly - t.paid, 0))}
+                    tone="bg-rose-50 text-rose-800"
+                  />
                 </dl>
                 {t.count === 0 && (
                   <p className="mt-4 rounded-xl bg-amber-50 px-3.5 py-2.5 text-xs font-medium text-amber-800 ring-1 ring-amber-200">
