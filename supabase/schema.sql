@@ -472,3 +472,23 @@ from public.classes c
 join public.fee_heads h on h.name in ('Admission Fee', 'Student Development Fee', 'Registration Fee')
 where c.name = 'Daycare'
 on conflict (class_id, head_id) do update set amount = excluded.amount;
+
+-- ------------------------------------------------------- challan delivery --
+-- A private bucket holding the PDFs that get sent to parents on WhatsApp.
+-- Private, not public: these carry a child's name and the family's balance, so
+-- the app hands out time-limited signed links rather than guessable URLs.
+insert into storage.buckets (id, name, public)
+values ('challans', 'challans', false)
+on conflict (id) do nothing;
+
+drop policy if exists "challans_upload" on storage.objects;
+create policy "challans_upload" on storage.objects
+  for insert to authenticated with check (bucket_id = 'challans');
+
+drop policy if exists "challans_read" on storage.objects;
+create policy "challans_read" on storage.objects
+  for select to authenticated using (bucket_id = 'challans');
+
+drop policy if exists "challans_update" on storage.objects;
+create policy "challans_update" on storage.objects
+  for update to authenticated using (bucket_id = 'challans');

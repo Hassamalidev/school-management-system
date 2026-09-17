@@ -425,6 +425,7 @@ export default function ChallansPage() {
           challans={sending}
           items={items}
           settings={settings}
+          blanksFor={blanksFor}
           onClose={() => setSending(null)}
         />
       )}

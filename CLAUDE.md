@@ -152,7 +152,13 @@ the other.
 
 Challans are sent to parents over **WhatsApp click-to-send**: `whatsapp.js`
 builds a `wa.me` link carrying the message, and the staff member presses send
-in WhatsApp. There is no gateway and no API key, so this costs nothing and the
+in WhatsApp. The PDF goes with it: `challanShare.js` uploads the generated
+challan to the private `challans` storage bucket and folds a 60-day signed link
+into the message. The bucket is private on purpose — a challan names a child
+and shows the family's balance — so the link, not the path, is the credential.
+Where the browser supports it, "Share file" hands WhatsApp the actual PDF
+through the system share sheet, but the sheet picks the recipient, so it is an
+extra rather than the main route. There is no gateway and no API key, so this costs nothing and the
 message comes from the school's own number — but it cannot attach the PDF, and
 a browser will only open one window per click, which is why `SendChallanModal`
 is a queue rather than a "send all at once" button. `normalisePhone()` accepts

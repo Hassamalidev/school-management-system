@@ -1,27 +1,51 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, ArrowRight, Check, Copy, MessageCircle, Phone, SkipForward } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  Check,
+  Copy,
+  Download,
+  MessageCircle,
+  Paperclip,
+  Phone,
+  Share2,
+  SkipForward,
+} from "lucide-react";
 import { canMessage, challanMessage, normalisePhone, whatsappLink } from "@/lib/whatsapp";
+import { challanPdfBlob } from "@/lib/pdf";
+import {
+  BucketMissingError,
+  LINK_VALID_DAYS,
+  canShareFile,
+  shareWithFile,
+  uploadChallanPdf,
+} from "@/lib/challanShare";
 import { num, periodLabel } from "@/lib/format";
-import { Modal, useToast } from "@/components/ui";
+import { Modal, Spinner, useToast } from "@/components/ui";
 
 /**
  * Walks the office through sending challans on WhatsApp, one parent at a time.
  *
- * It has to be one at a time: browsers only allow a window to open in response
- * to a click, so a single "send all" could never open thirty chats. Each tap
- * opens that parent's chat with the message written, and the queue advances.
+ * It has to be one at a time: a browser only opens a window in response to a
+ * click, so a single "send all" could never open thirty chats. For each parent
+ * the challan PDF is built, uploaded, and a signed link folded into the message
+ * — so the parent receives the actual challan, not just the figures.
  */
-export default function SendChallanModal({ challans, items, settings, onClose }) {
+export default function SendChallanModal({ challans, items, settings, blanksFor, onClose }) {
   const toast = useToast();
   const [note, setNote] = useState("");
   const [index, setIndex] = useState(0);
   const [sent, setSent] = useState(() => new Set());
   const [skipped, setSkipped] = useState(() => new Set());
 
-  const list = challans || [];
+  // Per-challan attachment state, kept so stepping back never re-uploads.
+  const [attach, setAttach] = useState(() => new Map());
+  const [preparing, setPreparing] = useState(false);
+  const [bucketMissing, setBucketMissing] = useState(false);
 
+  const list = challans || [];
   const sendable = useMemo(() => list.filter((c) => canMessage(c.phone)), [list]);
   const unreachable = useMemo(() => list.filter((c) => !canMessage(c.phone)), [list]);
 
@@ -29,15 +53,64 @@ export default function SendChallanModal({ challans, items, settings, onClose })
     setIndex(0);
     setSent(new Set());
     setSkipped(new Set());
+    setAttach(new Map());
+    setBucketMissing(false);
   }, [challans]);
-
-  if (!list.length) return null;
 
   const current = sendable[index] || null;
   const done = index >= sendable.length;
 
-  const itemsFor = (ch) => (items instanceof Map ? items.get(ch.id) : items?.[ch.id]) || [];
-  const messageFor = (ch) => challanMessage(ch, settings, itemsFor(ch), note);
+  const itemsFor = useCallback(
+    (ch) => (items instanceof Map ? items.get(ch.id) : items?.[ch.id]) || [],
+    [items]
+  );
+
+  /** Build the PDF for one challan, upload it, and remember the link. */
+  const prepare = useCallback(
+    async (ch) => {
+      if (!ch || attach.has(ch.id)) return;
+      setPreparing(true);
+      try {
+        const blanks = blanksFor ? new Map([[ch.id, blanksFor(ch)]]) : undefined;
+        const { blob, name } = await challanPdfBlob([ch], settings, new Map([[ch.id, itemsFor(ch)]]), blanks);
+
+        let link = null;
+        try {
+          link = await uploadChallanPdf(blob, name, ch);
+        } catch (e) {
+          if (e instanceof BucketMissingError) setBucketMissing(true);
+          else toast(e.message, "error");
+        }
+        setAttach((prev) => new Map(prev).set(ch.id, { blob, name, link }));
+      } catch (e) {
+        toast(e.message, "error");
+        setAttach((prev) => new Map(prev).set(ch.id, { blob: null, name: null, link: null }));
+      } finally {
+        setPreparing(false);
+      }
+    },
+    [attach, blanksFor, itemsFor, settings, toast]
+  );
+
+  // Get the current parent's challan ready while they are on screen.
+  useEffect(() => {
+    if (current) prepare(current);
+  }, [current, prepare]);
+
+  if (!list.length) return null;
+
+  const pack = current ? attach.get(current.id) : null;
+
+  const messageFor = (ch) => {
+    const extra = [];
+    const link = attach.get(ch.id)?.link;
+    if (link) {
+      extra.push(`📄 Your challan (PDF): ${link}`);
+      extra.push(`_Link works for ${LINK_VALID_DAYS} days._`);
+    }
+    if (note.trim()) extra.push(note.trim());
+    return challanMessage(ch, settings, itemsFor(ch), extra.join("\n"));
+  };
 
   const advance = () => setIndex((i) => i + 1);
 
@@ -49,9 +122,20 @@ export default function SendChallanModal({ challans, items, settings, onClose })
     advance();
   };
 
-  const skip = () => {
-    setSkipped((prev) => new Set(prev).add(current.id));
-    advance();
+  const shareFile = async () => {
+    if (!pack?.blob) return;
+    const ok = await shareWithFile({ blob: pack.blob, name: pack.name, text: messageFor(current) });
+    if (!ok) toast("Sharing the file is not available on this device.", "error");
+  };
+
+  const downloadPdf = () => {
+    if (!pack?.blob) return;
+    const url = URL.createObjectURL(pack.blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = pack.name;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const copy = async () => {
@@ -68,14 +152,9 @@ export default function SendChallanModal({ challans, items, settings, onClose })
       open
       onClose={onClose}
       title="Send challan on WhatsApp"
-      subtitle={
-        done
-          ? "Finished"
-          : `${index + 1} of ${sendable.length} · ${periodLabel(list[0].year, list[0].month)}`
-      }
+      subtitle={done ? "Finished" : `${index + 1} of ${sendable.length} · ${periodLabel(list[0].year, list[0].month)}`}
       width="max-w-2xl"
     >
-      {/* progress */}
       <div className="mb-4 flex items-center gap-3">
         <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200">
           <div
@@ -88,7 +167,19 @@ export default function SendChallanModal({ challans, items, settings, onClose })
         </span>
       </div>
 
-      {!done && (
+      {bucketMissing && (
+        <div className="mb-4 flex items-start gap-2.5 rounded-xl bg-amber-50 p-3.5 text-xs text-amber-900 ring-1 ring-amber-200">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <p>
+            <b>The challan PDF cannot be attached yet.</b> Run{" "}
+            <span className="font-mono">supabase/schema.sql</span> once more to create the storage bucket, and
+            every message will carry a download link. Messages still send with the full figures in the
+            meantime.
+          </p>
+        </div>
+      )}
+
+      {!done && current && (
         <>
           <div className="mb-4">
             <label className="label">Add a note to every message (optional)</label>
@@ -109,9 +200,20 @@ export default function SendChallanModal({ challans, items, settings, onClose })
                   <b className="text-rose-700">PKR {num(current.remaining)}</b>
                 </p>
               </div>
-              <span className="chip bg-emerald-50 text-emerald-700 ring-emerald-200">
-                <Phone className="h-3 w-3" /> +{normalisePhone(current.phone)}
-              </span>
+              <div className="flex items-center gap-2">
+                {preparing ? (
+                  <span className="chip bg-slate-100 text-slate-600 ring-slate-200">
+                    <Spinner className="h-3 w-3" /> preparing challan
+                  </span>
+                ) : pack?.link ? (
+                  <span className="chip bg-brand-50 text-brand-700 ring-brand-200">
+                    <Paperclip className="h-3 w-3" /> PDF attached
+                  </span>
+                ) : null}
+                <span className="chip bg-emerald-50 text-emerald-700 ring-emerald-200">
+                  <Phone className="h-3 w-3" /> +{normalisePhone(current.phone)}
+                </span>
+              </div>
             </div>
 
             <pre className="scroll-thin max-h-56 overflow-auto whitespace-pre-wrap px-4 py-3 font-sans text-xs leading-relaxed text-slate-700">
@@ -120,20 +222,30 @@ export default function SendChallanModal({ challans, items, settings, onClose })
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <button className="btn-primary flex-1" onClick={send}>
-              <MessageCircle className="h-4 w-4" /> Open WhatsApp &amp; next
+            <button className="btn-primary flex-1" onClick={send} disabled={preparing}>
+              {preparing ? <Spinner className="h-4 w-4" /> : <MessageCircle className="h-4 w-4" />}
+              Open WhatsApp &amp; next
+            </button>
+            {canShareFile() && (
+              <button className="btn-secondary" onClick={shareFile} disabled={!pack?.blob} title="Attach the PDF itself">
+                <Share2 className="h-4 w-4" /> Share file
+              </button>
+            )}
+            <button className="btn-secondary" onClick={downloadPdf} disabled={!pack?.blob} title="Download the challan">
+              <Download className="h-4 w-4" />
             </button>
             <button className="btn-secondary" onClick={copy} title="Copy the message">
-              <Copy className="h-4 w-4" /> Copy
+              <Copy className="h-4 w-4" />
             </button>
-            <button className="btn-secondary" onClick={skip}>
+            <button className="btn-secondary" onClick={() => { setSkipped((p) => new Set(p).add(current.id)); advance(); }}>
               <SkipForward className="h-4 w-4" /> Skip
             </button>
           </div>
 
           <p className="mt-3 text-xs text-slate-500">
-            WhatsApp opens in a new tab with the message ready — press send there, then come back to this tab
-            for the next parent.
+            WhatsApp opens in a new tab with the message and the challan link ready — press send there, then
+            come back for the next parent.
+            {canShareFile() && " “Share file” attaches the PDF itself, but lets you pick the contact."}
           </p>
         </>
       )}

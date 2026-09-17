@@ -48,7 +48,7 @@ function slipHeight(ch, items, blankHeads = []) {
  * Drawn with jsPDF's vector API rather than screenshotting the DOM, so the text
  * stays selectable and the file stays small.
  */
-export async function downloadChallanPDF(challans, settings = {}, filename, itemsByChallan, blanksByChallan) {
+async function buildChallanDoc(challans, settings = {}, itemsByChallan, blanksByChallan) {
   // jspdf ships both an ESM default export and a named `jsPDF`; accept either.
   const mod = await import("jspdf");
   const JsPDF = mod.jsPDF || mod.default?.jsPDF || mod.default;
@@ -86,12 +86,26 @@ export async function downloadChallanPDF(challans, settings = {}, filename, item
   });
 
   const name =
-    filename ||
-    (list.length === 1
+    list.length === 1
       ? `Challan-${list[0].receipt_no}-${list[0].student_name}.pdf`.replace(/\s+/g, "_")
-      : `Challans-${periodLabel(list[0].year, list[0].month)}.pdf`.replace(/\s+/g, "_"));
+      : `Challans-${periodLabel(list[0].year, list[0].month)}.pdf`.replace(/\s+/g, "_");
 
-  doc.save(name);
+  return { doc, name };
+}
+
+/** Save the challans to the user's downloads. */
+export async function downloadChallanPDF(challans, settings = {}, filename, itemsByChallan, blanksByChallan) {
+  const { doc, name } = await buildChallanDoc(challans, settings, itemsByChallan, blanksByChallan);
+  doc.save(filename || name);
+}
+
+/**
+ * The same PDF as a Blob, for attaching to a message or uploading. Returns the
+ * suggested file name alongside it.
+ */
+export async function challanPdfBlob(challans, settings = {}, itemsByChallan, blanksByChallan) {
+  const { doc, name } = await buildChallanDoc(challans, settings, itemsByChallan, blanksByChallan);
+  return { blob: doc.output("blob"), name };
 }
 
 function drawChallan(doc, ch, settings, top, items = [], blankHeads = [], logo = null) {
